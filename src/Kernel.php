@@ -9,6 +9,7 @@ use Leaf\Config\LeafConfig;
 use Leaf\Content\ContentLoader;
 use Leaf\Content\MarkdownParser;
 use Leaf\Content\SearchIndexBuilder;
+use Leaf\Localization\LocaleCode;
 use Leaf\Localization\TranslationLatteExtension;
 use Zephyrus\Core\ApplicationBuilder;
 use Zephyrus\Core\Config\Configuration;
@@ -42,10 +43,7 @@ abstract class Kernel
 
     public function run(): void
     {
-        $localeOverride = $_SERVER['LEAF_LOCALE'] ?? null;
-        if ($localeOverride !== null && $this->translationExtension !== null) {
-            $this->translationExtension->setCurrentLocale($localeOverride);
-        }
+        $this->applyDevLocale();
 
         [$app] = $this->buildApplication();
         $request = Request::fromGlobals();
@@ -141,6 +139,26 @@ abstract class Kernel
         return [$app, $router];
     }
 
+    /**
+     * Serves the locale prefix the dev router stripped, as a build does: only a declared non-default
+     * locale is kept, any other prefix goes back into the request path.
+     */
+    protected function applyDevLocale(): void
+    {
+        $locale = $_SERVER['LEAF_LOCALE'] ?? null;
+        if ($locale === null) {
+            return;
+        }
+        $localization = $this->config->localization;
+        $supported = array_values($localization->supportedLocales);
+        if (!LocaleCode::isPrefixedLocale($locale, $localization->locale, $supported)) {
+            $_SERVER['REQUEST_URI'] = $_SERVER['LEAF_ORIGINAL_URI'] ?? $_SERVER['REQUEST_URI'];
+            return;
+        }
+        $this->translationExtension?->setCurrentLocale($locale);
+        $this->contentLoader->setLocale($locale, $localization->locale, $supported);
+    }
+
     private function boot(): void
     {
         Dotenv::createImmutable(ROOT_DIR)->safeLoad();
@@ -149,6 +167,8 @@ abstract class Kernel
             'render' => RenderConfig::class,
             'leaf' => LeafConfig::class,
         ]);
+
+        LocaleCode::assertSupportedLocales(array_values($this->config->localization->supportedLocales));
 
         /** @var LeafConfig $leafConfig */
         $leafConfig = $this->config->section('leaf');

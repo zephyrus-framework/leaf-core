@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Leaf;
 
+use Leaf\Localization\LocaleCode;
+
 /**
  * Development server router for PHP's built-in web server.
  *
@@ -53,15 +55,13 @@ final class DevRouter
             return true;
         }
 
-        // Locale prefix stripping: /en/... or /fr/... → strip and store locale.
-        if (preg_match('#^/([a-z]{2})(/.*)?$#', $uri, $matches)) {
-            $possibleLocale = $matches[1];
-            $remainder = $matches[2] ?? '/';
-            // Only strip if it looks like a locale (2-letter code) and the path
-            // without prefix doesn't map to a static file.
+        // A leading locale-shaped segment is stripped; the kernel keeps it only for a declared non-default locale.
+        if (preg_match('#^/([^/]+)(/.*)?$#', $uri, $matches) && LocaleCode::isValid($matches[1])) {
             $publicPath = $this->projectRoot . '/public' . $uri;
             if (!is_file($publicPath)) {
-                $_SERVER['LEAF_LOCALE'] = $possibleLocale;
+                $_SERVER['LEAF_LOCALE'] = $matches[1];
+                $_SERVER['LEAF_ORIGINAL_URI'] = $_SERVER['REQUEST_URI'];
+                $remainder = $matches[2] ?? '/';
                 $_SERVER['REQUEST_URI'] = $remainder;
                 $uri = $remainder;
             }
