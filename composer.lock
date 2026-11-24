@@ -1365,16 +1365,16 @@
         },
         {
             "name": "zephyrus-framework/core",
-            "version": "v3.17.0",
+            "version": "v3.18.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/ophelios-studio/zephyrus-core.git",
-                "reference": "aea2e82a97fe73c3e73dec572e1390cc7c15ee88"
+                "url": "https://github.com/zephyrus-framework/core.git",
+                "reference": "49969ff6b8502f972cb9135f62aece8dc3f0535a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ophelios-studio/zephyrus-core/zipball/aea2e82a97fe73c3e73dec572e1390cc7c15ee88",
-                "reference": "aea2e82a97fe73c3e73dec572e1390cc7c15ee88",
+                "url": "https://api.github.com/repos/zephyrus-framework/core/zipball/49969ff6b8502f972cb9135f62aece8dc3f0535a",
+                "reference": "49969ff6b8502f972cb9135f62aece8dc3f0535a",
                 "shasum": ""
             },
             "require": {
@@ -1417,10 +1417,10 @@
             "description": "Cohesive PHP 8.4+ framework: attribute routing, immutable HTTP, typed config, and security middleware out of the box.",
             "support": {
                 "issues": "https://github.com/ophelios-studio/zephyrus-core/issues",
-                "source": "https://github.com/ophelios-studio/zephyrus-core/tree/v3.17.0"
+                "source": "https://github.com/ophelios-studio/zephyrus-core/tree/v3.18.0"
             },
-            "time": "2026-11-19T15:48:42+00:00",
-            "published-time": "2026-11-19T15:53:27+00:00"
+            "time": "2026-11-21T03:27:14+00:00",
+            "published-time": "2026-11-21T03:30:47+00:00"
         }
     ],
     "packages-dev": [
