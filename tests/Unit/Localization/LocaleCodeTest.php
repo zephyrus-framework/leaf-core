@@ -77,6 +77,39 @@ final class LocaleCodeTest extends TestCase
     }
 
     #[Test]
+    public function anUnderscoreLocaleGetsAHyphenHint(): void
+    {
+        try {
+            LocaleCode::assertSupportedLocales(['en', 'fr_ca']);
+            self::fail('expected a refusal');
+        } catch (ConfigurationException $e) {
+            self::assertSame(
+                'Configuration section \'localization\' field \'supported_locales\' has invalid value "fr_ca": '
+                . 'a lowercase language code of 2 or 3 letters, optionally followed by hyphenated subtags of 2 to 8 letters or digits (such as "fr" or "fr-ca"); use a hyphen, such as "fr-ca".',
+                $e->getMessage(),
+            );
+        }
+    }
+
+    #[Test]
+    public function aDefaultLocaleOutsideTheSupportedLocalesIsRefused(): void
+    {
+        LocaleCode::assertDefaultLocale('en', []);
+        LocaleCode::assertDefaultLocale('en', ['en', 'fr']);
+
+        try {
+            LocaleCode::assertDefaultLocale('de', ['en', 'fr']);
+            self::fail('expected a refusal');
+        } catch (ConfigurationException $e) {
+            self::assertSame(
+                'Configuration section \'localization\' field \'locale\' has invalid value "de": '
+                . 'one of the supported_locales, since the default locale is built at the site root.',
+                $e->getMessage(),
+            );
+        }
+    }
+
+    #[Test]
     public function onlyADeclaredNonDefaultLocaleIsAServedPrefix(): void
     {
         self::assertTrue(LocaleCode::isPrefixedLocale('fr-ca', 'en', ['en', 'fr-ca']));

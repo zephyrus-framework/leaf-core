@@ -23,6 +23,8 @@ final class KernelLocaleTest extends TestCase
         file_put_contents($this->root . '/site/locale/en/strings.json', '{"hi":"Hello"}');
         file_put_contents($this->root . '/site/locale/fr-ca/strings.json', '{"hi":"Salut"}');
         file_put_contents($this->root . '/site/content/fr-ca/only.md', "---\ntitle: Seulement\n---\nBonjour\n");
+        mkdir($this->root . '/site/app/Views', 0755, true);
+        file_put_contents($this->root . '/site/app/Views/prefix.latte', '[{$localePrefix}]');
         define('ROOT_DIR', $this->root . '/site');
     }
 
@@ -39,19 +41,20 @@ final class KernelLocaleTest extends TestCase
         unset($_SERVER['LEAF_LOCALE'], $_SERVER['LEAF_ORIGINAL_URI']);
     }
 
-    private function writeConfig(string $supported): void
+    private function writeConfig(string $supported, string $locale = 'en'): void
     {
-        file_put_contents(ROOT_DIR . '/config.yml', "localization:\n  locale: en\n  supported_locales: {$supported}\n  locale_path: locale\n");
+        file_put_contents(ROOT_DIR . '/config.yml', "localization:\n  locale: {$locale}\n  supported_locales: {$supported}\n  locale_path: locale\n");
     }
 
     private function kernel(): Kernel
     {
         return new class () extends Kernel {
-            public function selectLocale(): void
-            {
-                $this->applyDevLocale();
-            }
         };
+    }
+
+    private function selectDevLocale(Kernel $kernel): void
+    {
+        (new \ReflectionMethod(Kernel::class, 'applyDevLocale'))->invoke($kernel);
     }
 
     #[Test]
@@ -83,7 +86,7 @@ final class KernelLocaleTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/only';
         $kernel = $this->kernel();
 
-        $kernel->selectLocale();
+        $this->selectDevLocale($kernel);
 
         self::assertSame('fr-ca', $kernel->getTranslationExtension()?->getCurrentLocale());
         self::assertSame('fr-ca', $kernel->getContentLoader()->getCurrentLocale());
@@ -100,7 +103,7 @@ final class KernelLocaleTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/only';
         $kernel = $this->kernel();
 
-        $kernel->selectLocale();
+        $this->selectDevLocale($kernel);
 
         self::assertSame('/ab/only', $_SERVER['REQUEST_URI']);
         self::assertSame('en', $kernel->getTranslationExtension()?->getCurrentLocale());
@@ -117,8 +120,94 @@ final class KernelLocaleTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/only';
         $kernel = $this->kernel();
 
-        $kernel->selectLocale();
+        $this->selectDevLocale($kernel);
 
         self::assertSame('/en/only', $_SERVER['REQUEST_URI']);
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function anUnderscoreLocaleIsRefusedWithAHyphenHint(): void
+    {
+        $this->writeConfig('[en, fr_ca]');
+
+        try {
+            $this->kernel();
+            self::fail('expected a refusal');
+        } catch (ConfigurationException $e) {
+            self::assertSame(
+                'Configuration section \'localization\' field \'supported_locales\' has invalid value "fr_ca": '
+                . 'a lowercase language code of 2 or 3 letters, optionally followed by hyphenated subtags of 2 to 8 letters or digits (such as "fr" or "fr-ca"); use a hyphen, such as "fr-ca".',
+                $e->getMessage(),
+            );
+        }
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function aDefaultLocaleAbsentFromTheSupportedLocalesRefusesTheBoot(): void
+    {
+        $this->writeConfig('[fr-ca]');
+
+        try {
+            $this->kernel();
+            self::fail('expected a refusal');
+        } catch (ConfigurationException $e) {
+            self::assertSame(
+                'Configuration section \'localization\' field \'locale\' has invalid value "en": '
+                . 'one of the supported_locales, since the default locale is built at the site root.',
+                $e->getMessage(),
+            );
+        }
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function aMalformedDefaultLocaleRefusesTheBoot(): void
+    {
+        $this->writeConfig('[]', '../x');
+
+        try {
+            $this->kernel();
+            self::fail('expected a refusal');
+        } catch (ConfigurationException $e) {
+            self::assertSame(
+                'Configuration section \'localization\' field \'locale\' has invalid value "../x": '
+                . 'a lowercase language code of 2 or 3 letters, optionally followed by hyphenated subtags of 2 to 8 letters or digits (such as "fr" or "fr-ca").',
+                $e->getMessage(),
+            );
+        }
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function theKernelRegistersTheTranslationBeforeLeafSoTheLocalePrefixIsSet(): void
+    {
+        $this->writeConfig('[en, fr-ca]');
+        $kernel = $this->kernel();
+
+        self::assertSame('[]', $this->renderPrefix($kernel, []));
+        $kernel->getTranslationExtension()?->setCurrentLocale('fr-ca');
+        self::assertSame('[/fr-ca]', $this->renderPrefix($kernel, []));
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function aLocalePrefixPassedToTheRenderIsKeptInANonDefaultLocale(): void
+    {
+        $this->writeConfig('[en, fr-ca]');
+        $kernel = $this->kernel();
+        $kernel->getTranslationExtension()?->setCurrentLocale('fr-ca');
+
+        self::assertSame('[]', $this->renderPrefix($kernel, ['localePrefix' => '']));
+        self::assertSame('[/x]', $this->renderPrefix($kernel, ['localePrefix' => '/x']));
+    }
+
+    /**
+     * @param array<string, mixed> $args
+     */
+    private function renderPrefix(Kernel $kernel, array $args): string
+    {
+        return $kernel->getRenderEngine()->render('prefix', $args);
     }
 }

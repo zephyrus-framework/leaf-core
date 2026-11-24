@@ -99,7 +99,7 @@ final class LeafLatteExtensionTest extends TestCase
     {
         $latte = $this->createEngine(new LeafLatteExtension(LeafConfig::fromArray([])));
 
-        self::assertSame('[]', '[' . $latte->renderToString('{$localePrefix}') . ']');
+        self::assertSame('', $latte->renderToString('{$localePrefix}'));
     }
 
     #[Test]

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Leaf;
 
-use Leaf\Config\LeafConfig;
 use Latte\Extension;
 use Latte\Runtime\Template;
+use Leaf\Config\LeafConfig;
 
 /**
  * Latte extension that injects LeafConfig values as template parameters.
@@ -20,7 +20,7 @@ use Latte\Runtime\Template;
  *   {$leafAuthor}      — Author name
  *   {$leafAuthorUrl}   — Author website URL
  *   {$leafLicense}     — License identifier
- *   {$localePrefix}    (empty by default, the locale path prefix once a translation extension is registered)
+ *   {$localePrefix}    — Locale path prefix, empty unless a translation extension registered before this one sets it
  */
 final class LeafLatteExtension extends Extension
 {
@@ -43,23 +43,6 @@ final class LeafLatteExtension extends Extension
         ];
     }
 
-    /**
-     * Whether the template's {$localePrefix} is still the empty default, not a value the render supplied.
-     */
-    public static function hasDefaultLocalePrefix(Template $template): bool
-    {
-        return isset(self::defaults()[$template]);
-    }
-
-    /**
-     * @return \WeakMap<Template, true>
-     */
-    private static function defaults(): \WeakMap
-    {
-        static $defaults = new \WeakMap();
-        return $defaults;
-    }
-
     public function beforeRender(Template $template): void
     {
         // Inject leaf globals into the template's protected $params property
@@ -77,9 +60,5 @@ final class LeafLatteExtension extends Extension
         }, $template, Template::class);
 
         $setter($this->globals, $existing);
-
-        if (!array_key_exists('localePrefix', $existing)) {
-            self::defaults()[$template] = true;
-        }
     }
 }

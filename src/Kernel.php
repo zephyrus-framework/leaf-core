@@ -143,7 +143,7 @@ abstract class Kernel
      * Serves the locale prefix the dev router stripped, as a build does: only a declared non-default
      * locale is kept, any other prefix goes back into the request path.
      */
-    protected function applyDevLocale(): void
+    private function applyDevLocale(): void
     {
         $locale = $_SERVER['LEAF_LOCALE'] ?? null;
         if ($locale === null) {
@@ -168,7 +168,9 @@ abstract class Kernel
             'leaf' => LeafConfig::class,
         ]);
 
-        LocaleCode::assertSupportedLocales(array_values($this->config->localization->supportedLocales));
+        $supportedLocales = array_values($this->config->localization->supportedLocales);
+        LocaleCode::assertSupportedLocales($supportedLocales);
+        LocaleCode::assertDefaultLocale($this->config->localization->locale, $supportedLocales);
 
         /** @var LeafConfig $leafConfig */
         $leafConfig = $this->config->section('leaf');
@@ -177,7 +179,6 @@ abstract class Kernel
         /** @var RenderConfig $renderConfig */
         $renderConfig = $this->config->section('render') ?? RenderConfig::fromArray([]);
         $this->renderEngine = $renderConfig->createEngine(ROOT_DIR);
-        $this->renderEngine->addExtension(new LeafLatteExtension($this->leafConfig));
 
         $contentDir = ROOT_DIR . '/' . ltrim($this->leafConfig->contentPath, '/');
         $this->markdownParser = new MarkdownParser();
@@ -196,5 +197,6 @@ abstract class Kernel
             );
             $this->renderEngine->addExtension($this->translationExtension);
         }
+        $this->renderEngine->addExtension(new LeafLatteExtension($this->leafConfig));
     }
 }

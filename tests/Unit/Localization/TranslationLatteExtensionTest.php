@@ -191,18 +191,4 @@ final class TranslationLatteExtensionTest extends TestCase
 
         self::assertSame('/custom', $latte->renderToString('{$localePrefix}', ['localePrefix' => '/custom']));
     }
-
-    #[Test]
-    public function theTranslationPrefixWinsOverTheLeafDefaultWhateverTheExtensionOrder(): void
-    {
-        $ext = $this->createExtension();
-        $ext->setCurrentLocale('fr');
-        $latte = new Engine();
-        $latte->setLoader(new StringLoader());
-        $latte->setTempDirectory(sys_get_temp_dir());
-        $latte->addExtension(new \Leaf\LeafLatteExtension(\Leaf\Config\LeafConfig::fromArray([])));
-        $latte->addExtension($ext);
-
-        self::assertSame('/fr', $latte->renderToString('{$localePrefix}'));
-    }
 }

@@ -28,9 +28,30 @@ final class LocaleCode
     {
         foreach ($supportedLocales as $locale) {
             if (!self::isValid($locale)) {
-                throw ConfigurationException::invalidValue('localization', 'supported_locales', $locale, self::RULE);
+                throw ConfigurationException::invalidValue('localization', 'supported_locales', $locale, self::ruleFor($locale));
             }
         }
+    }
+
+    /**
+     * The default locale must be well formed and, when locales are declared, one of them.
+     *
+     * @param list<string> $supportedLocales
+     * @throws ConfigurationException
+     */
+    public static function assertDefaultLocale(string $locale, array $supportedLocales): void
+    {
+        if (!self::isValid($locale)) {
+            throw ConfigurationException::invalidValue('localization', 'locale', $locale, self::ruleFor($locale));
+        }
+        if ($supportedLocales !== [] && !in_array($locale, $supportedLocales, true)) {
+            throw ConfigurationException::invalidValue('localization', 'locale', $locale, 'one of the supported_locales, since the default locale is built at the site root');
+        }
+    }
+
+    private static function ruleFor(string $locale): string
+    {
+        return str_contains($locale, '_') ? self::RULE . '; use a hyphen, such as "fr-ca"' : self::RULE;
     }
 
     /**
