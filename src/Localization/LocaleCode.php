@@ -45,7 +45,11 @@ final class LocaleCode
             throw ConfigurationException::invalidValue('localization', 'locale', $locale, self::ruleFor($locale));
         }
         if ($supportedLocales !== [] && !in_array($locale, $supportedLocales, true)) {
-            throw ConfigurationException::invalidValue('localization', 'locale', $locale, 'one of the supported_locales, since the default locale is built at the site root');
+            throw ConfigurationException::invalidValue('localization', 'locale', $locale, sprintf(
+                'one of the supported_locales (%s), since the default locale is built at the site root; set locale to one of them, or add "%s" to supported_locales',
+                implode(', ', $supportedLocales),
+                $locale,
+            ));
         }
     }
 

@@ -155,7 +155,7 @@ final class KernelLocaleTest extends TestCase
         } catch (ConfigurationException $e) {
             self::assertSame(
                 'Configuration section \'localization\' field \'locale\' has invalid value "en": '
-                . 'one of the supported_locales, since the default locale is built at the site root.',
+                . 'one of the supported_locales (fr-ca), since the default locale is built at the site root; set locale to one of them, or add "en" to supported_locales.',
                 $e->getMessage(),
             );
         }

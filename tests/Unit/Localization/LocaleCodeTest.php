@@ -103,7 +103,22 @@ final class LocaleCodeTest extends TestCase
         } catch (ConfigurationException $e) {
             self::assertSame(
                 'Configuration section \'localization\' field \'locale\' has invalid value "de": '
-                . 'one of the supported_locales, since the default locale is built at the site root.',
+                . 'one of the supported_locales (en, fr), since the default locale is built at the site root; set locale to one of them, or add "de" to supported_locales.',
+                $e->getMessage(),
+            );
+        }
+    }
+
+    #[Test]
+    public function anUnderscoreDefaultLocaleGetsAHyphenHint(): void
+    {
+        try {
+            LocaleCode::assertDefaultLocale('fr_ca', []);
+            self::fail('expected a refusal');
+        } catch (ConfigurationException $e) {
+            self::assertSame(
+                'Configuration section \'localization\' field \'locale\' has invalid value "fr_ca": '
+                . 'a lowercase language code of 2 or 3 letters, optionally followed by hyphenated subtags of 2 to 8 letters or digits (such as "fr" or "fr-ca"); use a hyphen, such as "fr-ca".',
                 $e->getMessage(),
             );
         }
