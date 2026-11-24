@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Leaf\Localization;
 
 use Latte\Extension;
+use Leaf\LeafLatteExtension;
 use Latte\Runtime\Template;
 use Zephyrus\Localization\Translator;
 
@@ -21,6 +22,7 @@ use Zephyrus\Localization\Translator;
  *
  *   {$currentLocale}               — The active locale code (e.g. "en", "fr")
  *   {$supportedLocales}            — Array of all supported locale codes
+ *   {$localePrefix}                (empty for the default locale, "/<locale>" otherwise)
  *
  * The current locale can be switched at runtime via setCurrentLocale(),
  * which is used by the StaticSiteBuilder to generate pages for each locale.
@@ -80,10 +82,15 @@ final class TranslationLatteExtension extends Extension
         $existing = $template->getParameters();
 
         $defaultLocale = $this->defaultLocale;
+        $localePrefix = $locale === $defaultLocale ? '' : '/' . $locale;
+        $prefixIsDefault = LeafLatteExtension::hasDefaultLocalePrefix($template);
 
-        $setter = \Closure::bind(function () use ($locale, $defaultLocale, $supportedLocales, $existing): void {
+        $setter = \Closure::bind(function () use ($locale, $defaultLocale, $supportedLocales, $existing, $localePrefix, $prefixIsDefault): void {
             if (!array_key_exists('currentLocale', $existing)) {
                 $this->params['currentLocale'] = $locale;
+            }
+            if (!array_key_exists('localePrefix', $existing) || $prefixIsDefault) {
+                $this->params['localePrefix'] = $localePrefix;
             }
             if (!array_key_exists('defaultLocale', $existing)) {
                 $this->params['defaultLocale'] = $defaultLocale;

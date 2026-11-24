@@ -20,6 +20,7 @@ use Latte\Runtime\Template;
  *   {$leafAuthor}      — Author name
  *   {$leafAuthorUrl}   — Author website URL
  *   {$leafLicense}     — License identifier
+ *   {$localePrefix}    (empty by default, the locale path prefix once a translation extension is registered)
  */
 final class LeafLatteExtension extends Extension
 {
@@ -37,8 +38,26 @@ final class LeafLatteExtension extends Extension
             'leafAuthorUrl' => $config->authorUrl,
             'leafLicense' => $config->license,
             'leafBaseUrl' => rtrim($config->baseUrl, '/'),
+            'localePrefix' => '',
             'leafProductionUrl' => $config->productionUrl !== '' ? rtrim($config->productionUrl, '/') : '',
         ];
+    }
+
+    /**
+     * Whether the template's {$localePrefix} is still the empty default, not a value the render supplied.
+     */
+    public static function hasDefaultLocalePrefix(Template $template): bool
+    {
+        return isset(self::defaults()[$template]);
+    }
+
+    /**
+     * @return \WeakMap<Template, true>
+     */
+    private static function defaults(): \WeakMap
+    {
+        static $defaults = new \WeakMap();
+        return $defaults;
     }
 
     public function beforeRender(Template $template): void
@@ -58,5 +77,9 @@ final class LeafLatteExtension extends Extension
         }, $template, Template::class);
 
         $setter($this->globals, $existing);
+
+        if (!array_key_exists('localePrefix', $existing)) {
+            self::defaults()[$template] = true;
+        }
     }
 }

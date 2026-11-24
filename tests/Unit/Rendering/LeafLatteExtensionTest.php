@@ -93,4 +93,20 @@ final class LeafLatteExtensionTest extends TestCase
 
         $this->assertSame('My Project', $result);
     }
+
+    #[Test]
+    public function theLocalePrefixIsEmptyWithoutATranslationExtension(): void
+    {
+        $latte = $this->createEngine(new LeafLatteExtension(LeafConfig::fromArray([])));
+
+        self::assertSame('[]', '[' . $latte->renderToString('{$localePrefix}') . ']');
+    }
+
+    #[Test]
+    public function aTemplateKeepsItsOwnLocalePrefix(): void
+    {
+        $latte = $this->createEngine(new LeafLatteExtension(LeafConfig::fromArray([])));
+
+        self::assertSame('/mine', $latte->renderToString('{$localePrefix}', ['localePrefix' => '/mine']));
+    }
 }

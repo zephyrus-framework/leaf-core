@@ -61,7 +61,7 @@ When features are added to the core, all projects using it get them on `composer
 
 ### Localization
 
-- **`Leaf\Localization\TranslationLatteExtension`** - Latte extension providing `localize()` / `i18n()` template functions and `$currentLocale`, `$defaultLocale`, `$supportedLocales` template variables.
+- **`Leaf\Localization\TranslationLatteExtension`** - Latte extension providing `localize()` / `i18n()` template functions and `$currentLocale`, `$defaultLocale`, `$supportedLocales` and `$localePrefix` (`""` for the default locale, `"/<locale>"` otherwise) template variables.
 
 ### Development
 
@@ -171,7 +171,7 @@ leaf:
   production_url: "https://example.com"
 ```
 
-The default locale builds to the site root (`/`), other locales build to `/{locale}/`. The `production_url` enables automatic sitemap and robots.txt generation.
+The default locale builds to the site root (`/`), other locales build to `/{locale}/`. Each `supported_locales` entry must be a lowercase code such as `fr` or `fr-ca` (it becomes a path and a link); anything else stops `leaf build` and the dev server at startup. The dev server serves `/{locale}/...` and `content/{locale}/` for declared non-default locales only. The `production_url` enables automatic sitemap and robots.txt generation.
 
 ## Testing
 
