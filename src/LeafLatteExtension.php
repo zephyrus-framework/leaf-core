@@ -13,14 +13,14 @@ use Leaf\Config\LeafConfig;
  *
  * Makes the following variables available in every template:
  *
- *   {$leafName}        — Project name
- *   {$leafVersion}     — Project version
- *   {$leafDescription} — Project description
- *   {$leafGithubUrl}   — GitHub repository URL
- *   {$leafAuthor}      — Author name
- *   {$leafAuthorUrl}   — Author website URL
- *   {$leafLicense}     — License identifier
- *   {$localePrefix}    — Locale path prefix, empty unless a translation extension registered before this one sets it
+ *   {$leafName}       : Project name
+ *   {$leafVersion}    : Project version
+ *   {$leafDescription}: Project description
+ *   {$leafGithubUrl}  : GitHub repository URL
+ *   {$leafAuthor}     : Author name
+ *   {$leafAuthorUrl}  : Author website URL
+ *   {$leafLicense}    : License identifier
+ *   {$localePrefix}   : Locale path prefix, empty unless a translation extension registered before this one sets it
  */
 final class LeafLatteExtension extends Extension
 {

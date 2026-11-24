@@ -13,15 +13,15 @@ use Zephyrus\Localization\Translator;
  *
  * Registers the following Latte functions:
  *
- *   {localize('key')}              — Translate a key using the current locale
- *   {localize('key', [...])}       — Translate with parameter interpolation
- *   {i18n('key')}                  — Alias for localize()
+ *   {localize('key')}             : Translate a key using the current locale
+ *   {localize('key', [...])}      : Translate with parameter interpolation
+ *   {i18n('key')}                 : Alias for localize()
  *
  * Also injects template variables:
  *
- *   {$currentLocale}               — The active locale code (e.g. "en", "fr")
- *   {$supportedLocales}            — Array of all supported locale codes
- *   {$localePrefix}                — Empty for the default locale, "/<locale>" otherwise
+ *   {$currentLocale}              : The active locale code (e.g. "en", "fr")
+ *   {$supportedLocales}           : Array of all supported locale codes
+ *   {$localePrefix}               : Empty for the default locale, "/<locale>" otherwise
  *
  * The current locale can be switched at runtime via setCurrentLocale(),
  * which is used by the StaticSiteBuilder to generate pages for each locale.
