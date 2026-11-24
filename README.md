@@ -1,8 +1,8 @@
 # Zephyrus Leaf Core
 
-Core library for building static sites with the [Zephyrus Framework](https://github.com/ophelios-studio/zephyrus). Provides the static site generator, content parsing, SEO tools, multi-locale support, and development server.
+Core library for building static sites with the [Zephyrus Framework](https://github.com/zephyrus-framework/core). Provides the static site generator, content parsing, SEO tools, multi-locale support, and development server.
 
-This is the **library** package. For a ready-to-use project template, see [zephyrus-framework/leaf](https://github.com/ophelios-studio/leaf).
+This is the **library** package. For a ready-to-use project template, see [zephyrus-framework/leaf](https://github.com/zephyrus-framework/leaf).
 
 ## Quick Start
 
