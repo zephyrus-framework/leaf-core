@@ -17,6 +17,8 @@ final class SearchIndexBuilder
 {
     private const HEADING_PERMALINK = '#<a\b[^>]*\bclass="heading-permalink"[^>]*>.*?</a>#s';
 
+    private const LEADING_H1 = '#^\s*<h1\b[^>]*>.*?</h1>#s';
+
     private string $currentLocale = '';
     private string $defaultLocale = '';
     /** @var list<string> */
@@ -61,6 +63,7 @@ final class SearchIndexBuilder
                 $title = $parsed->meta('title', SlugTitle::fromSlug($slug));
 
                 $html = preg_replace(self::HEADING_PERMALINK, '', $parsed->html) ?? $parsed->html;
+                $html = preg_replace(self::LEADING_H1, '', $html, 1) ?? $html;
                 $plaintext = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 $plaintext = preg_replace('/\s+/', ' ', trim($plaintext)) ?? '';
 

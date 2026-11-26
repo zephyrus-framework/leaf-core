@@ -234,8 +234,19 @@ MD);
 
         $entry = $this->entryTitled('Links');
 
-        $this->assertSame('Links Intro. More Body.', $entry['content']);
-        $this->assertSame('Links Intro. More Body.', $entry['excerpt']);
+        $this->assertSame('Intro. More Body.', $entry['content']);
+        $this->assertSame('Intro. More Body.', $entry['excerpt']);
+    }
+
+    #[Test]
+    public function aLeadingH1IsLeftOutOfTheContentAndTheExcerpt(): void
+    {
+        file_put_contents($this->fixtureDir . '/getting-started/lead.md', "# Lead\n\nIntro.\n\n# Again\n\nBody.\n");
+
+        $entry = $this->entryTitled('Lead');
+
+        $this->assertSame('Intro. Again Body.', $entry['content']);
+        $this->assertSame('Intro. Again Body.', $entry['excerpt']);
     }
 
     /**
