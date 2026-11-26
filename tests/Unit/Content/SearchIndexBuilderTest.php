@@ -278,6 +278,29 @@ MD);
         $this->assertSame('Intro. Again Body.', $entry['excerpt']);
     }
 
+    #[Test]
+    public function hostileRawHtmlIsIndexedInBoundedTimeWithoutThePcreJit(): void
+    {
+        $jit = ini_get('pcre.jit');
+        ini_set('pcre.jit', '0');
+        try {
+            file_put_contents(
+                $this->fixtureDir . '/getting-started/hostile.md',
+                "---\ntitle: Hostile\n---\n\n<div>" . str_repeat('<br', 2_000_000) . "</div>\n\n"
+                . '<div>' . str_repeat('<a class="heading-permalink"', 200_000) . "</div>\n",
+            );
+
+            $started = hrtime(true);
+            $this->entryTitled('Hostile');
+            $seconds = (hrtime(true) - $started) / 1e9;
+        } finally {
+            ini_set('pcre.jit', $jit === false ? '1' : $jit);
+        }
+
+        // Parsing the input alone takes about a second; the unbounded patterns added tens of seconds.
+        $this->assertLessThan(5.0, $seconds);
+    }
+
     /**
      * @return array<string, mixed>
      */
