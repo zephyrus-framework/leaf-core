@@ -203,22 +203,26 @@ final class ContentLoader
         $sectionFiles = $this->collectSectionFiles();
         $configSections = $this->config->sections;
 
-        // Declared sections come first, in their configured order; the rest follow alphabetically.
+        // PHP turns numeric array keys into ints, so folder names and keys are cast back to strings once.
+        $folders = array_map('strval', array_keys($sectionFiles));
+        $declaredKeys = array_map('strval', array_keys($configSections));
         $keyByFolder = [];
-        foreach (array_keys($sectionFiles) as $folder) {
-            $keyByFolder[(string) $folder] = LeafConfig::sectionKey((string) $folder);
+        foreach ($folders as $folder) {
+            $keyByFolder[$folder] = LeafConfig::sectionKey($folder);
         }
+
+        // Declared sections come first, in their configured order; the rest follow alphabetically.
         $orderedSections = [];
-        foreach (array_keys($configSections) as $key) {
-            foreach ($keyByFolder as $folder => $folderKey) {
-                if ($folderKey === (string) $key) {
-                    $orderedSections[] = (string) $folder;
+        foreach ($declaredKeys as $key) {
+            foreach ($folders as $folder) {
+                if ($keyByFolder[$folder] === $key) {
+                    $orderedSections[] = $folder;
                 }
             }
         }
-        $undeclared = array_values(array_diff(array_keys($keyByFolder), $orderedSections));
+        $undeclared = array_values(array_diff($folders, $orderedSections));
         sort($undeclared);
-        $orderedSections = [...$orderedSections, ...array_map('strval', $undeclared)];
+        $orderedSections = [...$orderedSections, ...$undeclared];
 
         foreach ($orderedSections as $section) {
             if (!isset($sectionFiles[$section])) {

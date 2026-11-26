@@ -376,7 +376,7 @@ MD);
         $sections = array_unique(array_column($loader->getAllPages(), 'section'));
 
         $this->assertSame('Archive', $archive['title']);
-        $this->assertSame('2024', $archive['items'][0]['section']);
+        $this->assertSame(['2024', '2024'], array_column($archive['items'], 'section'));
         $this->assertContains('2024', $sections);
         $this->assertNotContains(2024, $sections);
         $this->assertSame('2024', $loader->getNextPage('2024', '1')['section']);
