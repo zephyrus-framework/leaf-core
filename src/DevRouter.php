@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Leaf;
 
 use Leaf\Localization\LocaleCode;
+use Zephyrus\Core\Config\ConfigurationException;
 
 /**
  * Development server router for PHP's built-in web server.
@@ -12,7 +13,8 @@ use Leaf\Localization\LocaleCode;
  * Handles:
  * - Static file serving from the public directory
  * - Live-reload endpoint (/__dev/reload) that returns a file change hash
- * - Fallthrough to the Zephyrus application for all other requests
+ * - Fallthrough to the Zephyrus application for all other requests, where a refused
+ *   configuration is answered as a plain-text 500 carrying the refusal message
  *
  * Usage in bin/router.php:
  *
@@ -23,8 +25,12 @@ final class DevRouter
 {
     private readonly FileWatcher $watcher;
 
+    /**
+     * @param resource|null $errorStream Where a refused configuration is also written (the process error output by default).
+     */
     public function __construct(
         private readonly string $projectRoot,
+        private $errorStream = null,
     ) {
         $this->watcher = new FileWatcher([
             $this->projectRoot . '/content',
@@ -74,7 +80,26 @@ final class DevRouter
         }
 
         // Fall through to the Zephyrus application.
-        require $this->projectRoot . '/public/index.php';
+        try {
+            require $this->projectRoot . '/public/index.php';
+        } catch (ConfigurationException $e) {
+            $this->reportRefusedConfiguration($e);
+        }
         return true;
+    }
+
+    private function reportRefusedConfiguration(ConfigurationException $e): void
+    {
+        http_response_code(500);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo $e->getMessage() . PHP_EOL;
+        $stream = $this->errorStream ?? fopen('php://stderr', 'w');
+        if ($stream === false) {
+            return;
+        }
+        fwrite($stream, $e->getMessage() . PHP_EOL);
+        if ($this->errorStream === null) {
+            fclose($stream);
+        }
     }
 }
