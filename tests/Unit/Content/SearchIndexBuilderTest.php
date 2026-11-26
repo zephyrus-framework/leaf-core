@@ -63,6 +63,36 @@ MD);
         $this->assertCount(2, $index);
     }
 
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function frontMatterTitles(): array
+    {
+        return [
+            'an integer becomes its string' => ['2024', '2024'],
+            'a float becomes its string' => ['1.5', '1.5'],
+            'a boolean falls back to the slug' => ['true', 'Odd Title'],
+            'a list falls back to the slug' => ['[a, b]', 'Odd Title'],
+            'null falls back to the slug' => ['~', 'Odd Title'],
+        ];
+    }
+
+    #[Test]
+    #[\PHPUnit\Framework\Attributes\DataProvider('frontMatterTitles')]
+    public function aNonStringTitleIsAlwaysAStringInTheIndex(string $yaml, string $expected): void
+    {
+        file_put_contents(
+            $this->fixtureDir . '/getting-started/odd-title.md',
+            "---\ntitle: {$yaml}\n---\n\nBody text.\n",
+        );
+
+        $index = (new SearchIndexBuilder($this->fixtureDir, $this->parser))->build();
+        $found = array_values(array_filter($index, fn (array $e) => str_ends_with($e['url'], '/odd-title')));
+
+        $this->assertCount(1, $found);
+        $this->assertSame($expected, $found[0]['title']);
+    }
+
     #[Test]
     public function tableCellsAreSeparatedInTheSearchText(): void
     {

@@ -62,7 +62,12 @@ final class SearchIndexBuilder
                     continue;
                 }
                 $parsed = $this->parser->parse($content);
-                $title = $parsed->meta('title', SlugTitle::fromSlug($slug));
+                $title = $parsed->meta('title');
+                $title = match (true) {
+                    is_string($title) => $title,
+                    is_int($title), is_float($title) => (string) $title,
+                    default => SlugTitle::fromSlug($slug),
+                };
 
                 $html = preg_replace(self::HEADING_PERMALINK, '', $parsed->html) ?? $parsed->html;
                 $html = preg_replace(self::LEADING_H1, '', $html, 1) ?? $html;

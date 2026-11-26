@@ -20,6 +20,7 @@ Moving from 0.1.x: see [UPGRADE.md](UPGRADE.md).
 
 ### Fixed
 
+- A numeric front matter `title` (`title: 2024`) is now indexed as a string, and a non-scalar one falls back to the title taken from the slug, so the page no longer vanishes from search.
 - The search index text extraction is now bounded, so unusual markup cannot stall or fail a build on a PHP without the PCRE JIT.
 
 ## 0.1.x
