@@ -21,7 +21,7 @@ This gives you a working static site with docs, live-reload, and one-command bui
 If you're integrating Leaf Core into an existing Zephyrus project:
 
 ```bash
-composer require zephyrus-framework/leaf-core
+composer require zephyrus-framework/leaf-core:^1.0
 ```
 
 ## Architecture
@@ -66,12 +66,12 @@ When features are added to the core, all projects using it get them on `composer
 ### Development
 
 - **`Leaf\DevRouter`** - PHP built-in server router with static file serving, locale prefix handling, and live-reload endpoint.
-- **`Leaf\FileWatcher`** - Detects file changes for the live-reload system.
+- **`Leaf\FileWatcher`** - Detects file changes for the live-reload system. Internal, not part of the public API.
 
 ### Configuration
 
 - **`Leaf\Config\LeafConfig`** - Typed configuration from the `leaf:` section in `config.yml`.
-- **`Leaf\LeafLatteExtension`** - Injects Leaf config values as template globals (`$leafName`, `$leafBaseUrl`, `$leafProductionUrl`, etc.).
+- **`Leaf\LeafLatteExtension`** - Injects Leaf config values as template globals (`$leafName`, `$leafBaseUrl`, `$leafProductionUrl`, etc.). The globals are public; the class is internal.
 
 ## Usage
 
@@ -172,6 +172,13 @@ leaf:
 ```
 
 When `locale_path` is not set, Leaf reads `locale/` at the project root if that directory exists. The default locale builds to the site root (`/`), other locales build to `/{locale}/`. Each `supported_locales` entry must be a code such as `fr` or `fr-ca` (it becomes a path and a link): the core lowercases it first (`FR-CA` is admitted), so `en` and `EN` are the same locale and listing one twice is refused, like anything else that is not a code (`fr_CA`, `../x`), at startup. The default `locale` must follow the same rule and, when `supported_locales` is not empty, be one of them. `leaf build` stops with the refusal; under `php -S` the dev server still starts, then every request answers 500 and the refusal shows in the terminal only. The dev server serves `/{locale}/...` and `content/{locale}/` for declared non-default locales only. The `production_url` enables automatic sitemap and robots.txt generation.
+
+## Versioning
+
+Leaf follows [semantic versioning](https://semver.org/) from 1.0.0: nothing public breaks before 2.0.
+Public means the `config.yml` keys, the content layout and front matter, the output in `dist/`, the template names and variables, the CLI, and the public API of the classes listed above except those marked `@internal`.
+See [Versioning and stability](https://leaf.ophelios.com/getting-started/versioning/) for the full contract.
+Release notes are in [CHANGELOG.md](CHANGELOG.md); moving from 0.1.x is covered in [UPGRADE.md](UPGRADE.md).
 
 ## Testing
 
