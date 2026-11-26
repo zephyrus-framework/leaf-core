@@ -41,6 +41,11 @@ final class KernelLocaleTest extends TestCase
         unset($_SERVER['LEAF_LOCALE'], $_SERVER['LEAF_ORIGINAL_URI']);
     }
 
+    private function writeConfigWithoutLocalePath(): void
+    {
+        file_put_contents(ROOT_DIR . '/config.yml', "localization:\n  locale: en\n  supported_locales: [en]\n");
+    }
+
     private function writeConfig(string $supported, string $locale = 'en'): void
     {
         file_put_contents(ROOT_DIR . '/config.yml', "localization:\n  locale: {$locale}\n  supported_locales: {$supported}\n  locale_path: locale\n");
@@ -201,6 +206,35 @@ final class KernelLocaleTest extends TestCase
 
         self::assertSame('[]', $this->renderPrefix($kernel, ['localePrefix' => '']));
         self::assertSame('[/x]', $this->renderPrefix($kernel, ['localePrefix' => '/x']));
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function aSiteWithoutALocalePathReadsItsLocaleDirectory(): void
+    {
+        $this->writeConfigWithoutLocalePath();
+        file_put_contents(ROOT_DIR . '/app/Views/hi.latte', '{localize("hi")}');
+        $kernel = $this->kernel();
+
+        self::assertSame('Hello', $kernel->getRenderEngine()->render('hi', []));
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function aSiteWithoutALocalePathNorALocaleDirectoryHasNoTranslator(): void
+    {
+        $this->writeConfigWithoutLocalePath();
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(ROOT_DIR . '/locale', \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST,
+        );
+        foreach ($items as $item) {
+            $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+        }
+        rmdir(ROOT_DIR . '/locale');
+        $kernel = $this->kernel();
+
+        self::assertNull($kernel->getTranslationExtension());
     }
 
     /**

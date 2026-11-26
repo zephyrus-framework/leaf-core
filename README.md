@@ -171,7 +171,7 @@ leaf:
   production_url: "https://example.com"
 ```
 
-The default locale builds to the site root (`/`), other locales build to `/{locale}/`. Each `supported_locales` entry must be a code such as `fr` or `fr-ca` (it becomes a path and a link): the core lowercases it first (`FR-CA` is admitted), and anything else (`fr_CA`, `../x`) is refused at startup. The default `locale` must follow the same rule and, when `supported_locales` is not empty, be one of them. `leaf build` stops with the refusal; under `php -S` the dev server still starts, then every request answers 500 and the refusal shows in the terminal only. The dev server serves `/{locale}/...` and `content/{locale}/` for declared non-default locales only. The `production_url` enables automatic sitemap and robots.txt generation.
+When `locale_path` is not set, Leaf reads `locale/` at the project root if that directory exists. The default locale builds to the site root (`/`), other locales build to `/{locale}/`. Each `supported_locales` entry must be a code such as `fr` or `fr-ca` (it becomes a path and a link): the core lowercases it first (`FR-CA` is admitted), and anything else (`fr_CA`, `../x`) is refused at startup. The default `locale` must follow the same rule and, when `supported_locales` is not empty, be one of them. `leaf build` stops with the refusal; under `php -S` the dev server still starts, then every request answers 500 and the refusal shows in the terminal only. The dev server serves `/{locale}/...` and `content/{locale}/` for declared non-default locales only. The `production_url` enables automatic sitemap and robots.txt generation.
 
 ## Testing
 

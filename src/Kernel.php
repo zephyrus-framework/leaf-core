@@ -186,8 +186,8 @@ abstract class Kernel
         $this->searchIndexBuilder = new SearchIndexBuilder($contentDir, $this->markdownParser);
 
         $localizationConfig = $this->config->localization;
-        if ($localizationConfig->localePath !== null && $localizationConfig->localePath !== '') {
-            $localePath = ROOT_DIR . '/' . ltrim($localizationConfig->localePath, '/');
+        $localePath = $this->resolveLocalePath($localizationConfig->localePath);
+        if ($localePath !== null) {
             $loader = new JsonLocaleLoader($localePath);
             $this->translator = new Translator($loader, $localizationConfig->locale);
             $this->translationExtension = new TranslationLatteExtension(
@@ -198,5 +198,16 @@ abstract class Kernel
             $this->renderEngine->addExtension($this->translationExtension);
         }
         $this->renderEngine->addExtension(new LeafLatteExtension($this->leafConfig));
+    }
+
+    /** The configured locale directory, else `locale/` under the project root when it exists. */
+    private function resolveLocalePath(?string $configured): ?string
+    {
+        if ($configured !== null && $configured !== '') {
+            return ROOT_DIR . '/' . ltrim($configured, '/');
+        }
+        $default = ROOT_DIR . '/locale';
+
+        return is_dir($default) ? $default : null;
     }
 }
