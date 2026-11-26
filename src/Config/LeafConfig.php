@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Leaf\Config;
 
 use Zephyrus\Core\Config\ConfigSection;
+use Zephyrus\Core\Config\ConfigurationException;
 
 /**
  * Typed configuration for the "leaf" section in config.yml.
@@ -23,9 +24,12 @@ use Zephyrus\Core\Config\ConfigSection;
  *   author: "Your Name"
  *   author_url: "https://yoursite.com"
  *   license: "MIT"
+ *   logo: "/assets/images/logo.png"
  */
 final class LeafConfig extends ConfigSection
 {
+    private const string LOGO_RULE = 'an empty string, or a path under public/ that starts with a single "/" and holds no "..", backslash, space, quote or control character (such as "/assets/images/logo.png")';
+
     public readonly string $name;
     public readonly string $version;
     public readonly string $description;
@@ -37,6 +41,7 @@ final class LeafConfig extends ConfigSection
     public readonly string $authorUrl;
     public readonly string $license;
     public readonly string $productionUrl;
+    public readonly string $logo;
 
     /** @var array<string, string> normalized key => label, ordered */
     public readonly array $sections;
@@ -51,6 +56,16 @@ final class LeafConfig extends ConfigSection
      * @var list<string|list<string>>
      */
     public readonly array $postBuild;
+
+    /**
+     * @param array<string, mixed> $values
+     * @throws ConfigurationException
+     */
+    public function __construct(array $values)
+    {
+        parent::__construct($values);
+        $this->logo = $this->parseLogo();
+    }
 
     public static function fromArray(array $values): static
     {
@@ -69,6 +84,28 @@ final class LeafConfig extends ConfigSection
         $instance->sections = $instance->parseSections();
         $instance->postBuild = $instance->parsePostBuild();
         return $instance;
+    }
+
+    /**
+     * @throws ConfigurationException
+     */
+    private function parseLogo(): string
+    {
+        $logo = $this->getString('logo', '');
+        if ($logo === '' || self::isSafeLogoPath($logo)) {
+            return $logo;
+        }
+
+        $printable = preg_replace('/[\x00-\x1f\x7f]/', '?', $logo) ?? '';
+        throw ConfigurationException::invalidValue('leaf', 'logo', $printable, self::LOGO_RULE);
+    }
+
+    private static function isSafeLogoPath(string $logo): bool
+    {
+        return str_starts_with($logo, '/')
+            && !str_starts_with($logo, '//')
+            && preg_match('/[\x00-\x20\x7f\\\\"\'\x{80}-\x{9f}]/u', $logo) === 0
+            && !in_array('..', explode('/', $logo), true);
     }
 
     /**

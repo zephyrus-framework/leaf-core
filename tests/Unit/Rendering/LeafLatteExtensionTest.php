@@ -82,6 +82,16 @@ final class LeafLatteExtensionTest extends TestCase
     }
 
     #[Test]
+    public function theLogoPathIsExposedAndEmptyByDefault(): void
+    {
+        $withLogo = $this->createEngine(new LeafLatteExtension(LeafConfig::fromArray(['logo' => '/assets/logo.png'])));
+        $without = $this->createEngine(new LeafLatteExtension(LeafConfig::fromArray([])));
+
+        $this->assertSame('/assets/logo.png', $withLogo->renderToString('{$leafLogo}', []));
+        $this->assertSame('', $without->renderToString('{$leafLogo}', []));
+    }
+
+    #[Test]
     public function worksWithDefaultConfig(): void
     {
         $config = LeafConfig::fromArray([]);

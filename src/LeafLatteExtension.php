@@ -15,6 +15,7 @@ use Leaf\Config\LeafConfig;
  *
  *   {$leafName}       : Project name
  *   {$leafVersion}    : Project version
+ *   {$leafLogo}       : Logo path under public/ (empty when unset)
  *   {$leafDescription}: Project description
  *   {$leafGithubUrl}  : GitHub repository URL
  *   {$leafAuthor}     : Author name
@@ -33,6 +34,7 @@ final class LeafLatteExtension extends Extension
         $this->globals = [
             'leafName' => $config->name,
             'leafVersion' => $config->version,
+            'leafLogo' => $config->logo,
             'leafDescription' => $config->description,
             'leafGithubUrl' => $config->githubUrl,
             'leafAuthor' => $config->author,
