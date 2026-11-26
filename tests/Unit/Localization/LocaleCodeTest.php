@@ -76,6 +76,52 @@ final class LocaleCodeTest extends TestCase
         }
     }
 
+    /**
+     * @return array<string, array{list<string>, string}>
+     */
+    public static function repeatedLocales(): array
+    {
+        return [
+            'same code twice' => [['fr', 'fr'], 'fr'],
+            'repeated among others' => [['en', 'fr', 'fr', 'de'], 'fr'],
+            'regional code twice' => [['en', 'fr-ca', 'fr-ca'], 'fr-ca'],
+        ];
+    }
+
+    /**
+     * @param list<string> $locales
+     */
+    #[Test]
+    #[DataProvider('repeatedLocales')]
+    public function aRepeatedSupportedLocaleIsRefused(array $locales, string $repeated): void
+    {
+        try {
+            LocaleCode::assertSupportedLocales($locales);
+            self::fail('expected a refusal');
+        } catch (ConfigurationException $e) {
+            self::assertSame(
+                'Configuration section \'localization\' field \'supported_locales\' has invalid value "' . $repeated . '": '
+                . 'listed once; locale codes are compared in lower case, so "EN" and "en" are the same locale.',
+                $e->getMessage(),
+            );
+        }
+    }
+
+    #[Test]
+    public function aMalformedLocaleIsReportedBeforeARepeat(): void
+    {
+        try {
+            LocaleCode::assertSupportedLocales(['en', ' en', 'en']);
+            self::fail('expected a refusal');
+        } catch (ConfigurationException $e) {
+            self::assertSame(
+                'Configuration section \'localization\' field \'supported_locales\' has invalid value " en": '
+                . 'a lowercase language code of 2 or 3 letters, optionally followed by hyphenated subtags of 2 to 8 letters or digits (such as "fr" or "fr-ca").',
+                $e->getMessage(),
+            );
+        }
+    }
+
     #[Test]
     public function anUnderscoreLocaleGetsAHyphenHint(): void
     {

@@ -15,6 +15,8 @@ final class LocaleCode
 
     private const string RULE = 'a lowercase language code of 2 or 3 letters, optionally followed by hyphenated subtags of 2 to 8 letters or digits (such as "fr" or "fr-ca")';
 
+    private const string REPEATED_RULE = 'listed once; locale codes are compared in lower case, so "EN" and "en" are the same locale';
+
     public static function isValid(string $locale): bool
     {
         return preg_match(self::PATTERN, $locale) === 1;
@@ -26,10 +28,15 @@ final class LocaleCode
      */
     public static function assertSupportedLocales(array $supportedLocales): void
     {
+        $seen = [];
         foreach ($supportedLocales as $locale) {
             if (!self::isValid($locale)) {
                 throw ConfigurationException::invalidValue('localization', 'supported_locales', $locale, self::ruleFor($locale));
             }
+            if (isset($seen[$locale])) {
+                throw ConfigurationException::invalidValue('localization', 'supported_locales', $locale, self::REPEATED_RULE);
+            }
+            $seen[$locale] = true;
         }
     }
 
