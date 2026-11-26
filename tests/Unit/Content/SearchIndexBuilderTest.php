@@ -63,6 +63,35 @@ MD);
     }
 
     #[Test]
+    public function tableCellsAreSeparatedInTheSearchText(): void
+    {
+        file_put_contents(
+            $this->fixtureDir . '/getting-started/table.md',
+            "---\ntitle: Table\n---\n\n<table><tr><td>Home page</td><td>Not found page</td></tr></table>\n",
+        );
+
+        $entry = $this->entryTitled('Table');
+
+        $this->assertSame('Home page Not found page', $entry['content']);
+    }
+
+    #[Test]
+    public function aWordSplitByInlineMarkupStaysWhole(): void
+    {
+        file_put_contents($this->fixtureDir . '/getting-started/inline.md', <<<'MD'
+---
+title: Inline
+---
+
+A wor*d* and a **bo**ld `co`de.
+MD);
+
+        $entry = $this->entryTitled('Inline');
+
+        $this->assertSame('A word and a bold code.', $entry['content']);
+    }
+
+    #[Test]
     public function entryContainsExpectedFields(): void
     {
         $builder = new SearchIndexBuilder($this->fixtureDir, $this->parser);

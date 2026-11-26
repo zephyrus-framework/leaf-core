@@ -17,6 +17,8 @@ final class SearchIndexBuilder
 {
     private const HEADING_PERMALINK = '#<a\b[^>]*\bclass="heading-permalink"[^>]*>.*?</a>#s';
 
+    private const BLOCK_BOUNDARY = '#</(?:td|th|tr|p|li|dt|dd|h[1-6]|div|pre|blockquote|table|caption)>|<br\b[^>]*>#i';
+
     private const LEADING_H1 = '#^\s*<h1\b[^>]*>.*?</h1>#s';
 
     private string $currentLocale = '';
@@ -64,6 +66,7 @@ final class SearchIndexBuilder
 
                 $html = preg_replace(self::HEADING_PERMALINK, '', $parsed->html) ?? $parsed->html;
                 $html = preg_replace(self::LEADING_H1, '', $html, 1) ?? $html;
+                $html = preg_replace(self::BLOCK_BOUNDARY, '$0 ', $html) ?? $html;
                 $plaintext = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 $plaintext = preg_replace('/\s+/', ' ', trim($plaintext)) ?? '';
 
