@@ -109,4 +109,20 @@ final class LeafLatteExtensionTest extends TestCase
 
         self::assertSame('/mine', $latte->renderToString('{$localePrefix}', ['localePrefix' => '/mine']));
     }
+
+    #[Test]
+    public function supportedLocalesIsEmptyWithoutATranslationExtension(): void
+    {
+        $latte = $this->createEngine(new LeafLatteExtension(LeafConfig::fromArray([])));
+
+        self::assertSame('0', $latte->renderToString('{count($supportedLocales)}'));
+    }
+
+    #[Test]
+    public function aTemplateKeepsItsOwnSupportedLocales(): void
+    {
+        $latte = $this->createEngine(new LeafLatteExtension(LeafConfig::fromArray([])));
+
+        self::assertSame('en,fr', $latte->renderToString('{implode(",", $supportedLocales)}', ['supportedLocales' => ['en', 'fr']]));
+    }
 }

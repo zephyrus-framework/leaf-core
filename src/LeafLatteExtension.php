@@ -21,6 +21,7 @@ use Leaf\Config\LeafConfig;
  *   {$leafAuthorUrl}  : Author website URL
  *   {$leafLicense}    : License identifier
  *   {$localePrefix}   : Locale path prefix, empty unless a translation extension registered before this one sets it
+ *   {$supportedLocales}: Supported locales, empty unless a translation extension registered before this one sets it
  */
 final class LeafLatteExtension extends Extension
 {
@@ -39,6 +40,7 @@ final class LeafLatteExtension extends Extension
             'leafLicense' => $config->license,
             'leafBaseUrl' => rtrim($config->baseUrl, '/'),
             'localePrefix' => '',
+            'supportedLocales' => [],
             'leafProductionUrl' => $config->productionUrl !== '' ? rtrim($config->productionUrl, '/') : '',
         ];
     }
