@@ -33,6 +33,24 @@ Pin the new version, and replace the checksum together with it:
   lowercased (`en` and `EN` count as one). Remove the duplicate. The message is quoted in the
   [changelog](CHANGELOG.md).
 
+## Tailwind CSS
+
+The theme no longer loads Tailwind CSS from its CDN. It ships the classes its own templates and scripts use,
+compiled in `public/assets/css/tailwind.css`, and pages look the same.
+
+- **Binary tier**: the CLI embeds the new theme. A template you override keeps working, and so does a
+  `templates/partials/head.latte` that still loads the CDN. One case breaks: a template or a Markdown page of your
+  site (an override, a custom page or content) that uses a Tailwind class the theme itself never uses loses that
+  style. Load Tailwind from your
+  `templates/partials/head.latte` with the snippet in the theme's
+  [Styling](https://github.com/zephyrus-framework/leaf/blob/v1.0.0/README.md#styling) section.
+- **Composer tier**: your project has its own copy of the theme and keeps loading the CDN until you take over
+  the compiled stylesheet, as the theme's
+  [changelog](https://github.com/zephyrus-framework/leaf/blob/v1.0.0/CHANGELOG.md) describes. `composer build`
+  then compiles the classes of your templates and also those of the Markdown pages in `content/` (the theme's
+  `tailwind.config.js` now reads the `class` attributes of `content/**/*.md`: copy that file rather than adding the
+  path by hand, which would also compile the words of your prose).
+
 ## Theme overrides
 
 A template, stylesheet or script you copied from the theme belongs to your site. The theme's
