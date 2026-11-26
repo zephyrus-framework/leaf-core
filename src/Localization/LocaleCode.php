@@ -8,6 +8,8 @@ use Zephyrus\Core\Config\ConfigurationException;
 
 /**
  * The shape a supported locale must have, since Leaf writes it into paths and links.
+ *
+ * @internal
  */
 final class LocaleCode
 {

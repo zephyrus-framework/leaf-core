@@ -23,6 +23,8 @@ use Leaf\Config\LeafConfig;
  *   {$leafLicense}    : License identifier
  *   {$localePrefix}   : Locale path prefix, empty unless a translation extension registered before this one sets it
  *   {$supportedLocales}: Supported locales, empty unless a translation extension registered before this one sets it
+ *
+ * @internal
  */
 final class LeafLatteExtension extends Extension
 {

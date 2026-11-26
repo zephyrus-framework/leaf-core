@@ -9,6 +9,8 @@ namespace Leaf;
  *
  * Computes an MD5 hash of all file mtimes in the watched directories.
  * When the hash changes, files have been added, removed, or modified.
+ *
+ * @internal
  */
 final class FileWatcher
 {
