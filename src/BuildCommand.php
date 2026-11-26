@@ -136,21 +136,12 @@ class BuildCommand
         }
 
         // Move each locale's 404/index.html to 404.html.
-        $notFoundDirs = ['' => ''];
+        $this->moveNotFound($outputDir, '');
         if ($isMultiLocale) {
             foreach ($supportedLocales as $locale) {
                 if ($locale !== $defaultLocale) {
-                    $notFoundDirs[$locale] = "[{$locale}] ";
+                    $this->moveNotFound($outputDir . '/' . $locale, "[{$locale}] ");
                 }
-            }
-        }
-        foreach ($notFoundDirs as $locale => $label) {
-            $localeDir = $locale === '' ? $outputDir : $outputDir . '/' . $locale;
-            $notFoundSource = $localeDir . '/404/index.html';
-            if (is_file($notFoundSource)) {
-                rename($notFoundSource, $localeDir . '/404.html');
-                @rmdir($localeDir . '/404');
-                echo "  -> {$label}404.html created" . PHP_EOL;
             }
         }
 
@@ -238,6 +229,16 @@ class BuildCommand
 
         echo PHP_EOL . "Build complete!" . PHP_EOL;
         return 0;
+    }
+
+    private function moveNotFound(string $dir, string $label): void
+    {
+        $notFoundSource = $dir . '/404/index.html';
+        if (is_file($notFoundSource)) {
+            rename($notFoundSource, $dir . '/404.html');
+            @rmdir($dir . '/404');
+            echo "  -> {$label}404.html created" . PHP_EOL;
+        }
     }
 
     /**
