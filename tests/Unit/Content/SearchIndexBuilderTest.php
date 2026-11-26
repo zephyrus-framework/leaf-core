@@ -227,6 +227,17 @@ MD);
         $this->assertStringContainsString('Use <b> for bold & more.', $entry['excerpt']);
     }
 
+    #[Test]
+    public function headingPermalinksAreNotPartOfTheContentNorTheExcerpt(): void
+    {
+        file_put_contents($this->fixtureDir . '/getting-started/links.md', "# Links\n\nIntro.\n\n## More\n\nBody.\n");
+
+        $entry = $this->entryTitled('Links');
+
+        $this->assertSame('Links Intro. More Body.', $entry['content']);
+        $this->assertSame('Links Intro. More Body.', $entry['excerpt']);
+    }
+
     /**
      * @return array<string, mixed>
      */

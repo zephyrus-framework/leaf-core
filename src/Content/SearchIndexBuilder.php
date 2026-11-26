@@ -15,6 +15,8 @@ namespace Leaf\Content;
  */
 final class SearchIndexBuilder
 {
+    private const HEADING_PERMALINK = '#<a\b[^>]*\bclass="heading-permalink"[^>]*>.*?</a>#s';
+
     private string $currentLocale = '';
     private string $defaultLocale = '';
     /** @var list<string> */
@@ -58,7 +60,8 @@ final class SearchIndexBuilder
                 $parsed = $this->parser->parse($content);
                 $title = $parsed->meta('title', SlugTitle::fromSlug($slug));
 
-                $plaintext = html_entity_decode(strip_tags($parsed->html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $html = preg_replace(self::HEADING_PERMALINK, '', $parsed->html) ?? $parsed->html;
+                $plaintext = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 $plaintext = preg_replace('/\s+/', ' ', trim($plaintext)) ?? '';
 
                 $excerpt = mb_strlen($plaintext) > 300
