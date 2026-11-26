@@ -194,13 +194,15 @@ MD);
     }
 
     #[Test]
-    public function aTitleAndHeadingsWithAmpersandsAreNotEscapedTwice(): void
+    public function anAuthorTypedEntityInTheTitleAndHeadingsIsKeptAsTyped(): void
     {
-        file_put_contents($this->fixtureDir . '/getting-started/robots.md', "---\ntitle: Tom & Jerry\n---\n\n## Sitemap & Robots\n\nBody.\n");
+        file_put_contents($this->fixtureDir . '/getting-started/chips.md', "---\ntitle: Fish &amp; Chips\n---\n\n## Q &amp;amp; A\n\nBody.\n");
 
-        $entry = $this->entryTitled('Tom & Jerry');
+        $index = (new SearchIndexBuilder($this->fixtureDir, $this->parser))->build();
+        $entry = array_values(array_filter($index, fn (array $e) => str_ends_with($e['url'], '/getting-started/chips')))[0];
 
-        $this->assertSame(['Sitemap & Robots'], $entry['headings']);
+        $this->assertSame('Fish &amp; Chips', $entry['title']);
+        $this->assertSame(['Q &amp; A'], $entry['headings']);
     }
 
     #[Test]
