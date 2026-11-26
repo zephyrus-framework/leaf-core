@@ -121,7 +121,18 @@ MD);
         $longIndex = array_search('Long', $titles, true);
         $entry = $index[$longIndex];
 
-        $this->assertLessThanOrEqual(303, mb_strlen($entry['excerpt'])); // 300 + "..."
+        $this->assertLessThanOrEqual(301, mb_strlen($entry['excerpt'])); // 300 + "…"
+    }
+
+    #[Test]
+    public function aTruncatedExcerptEndsWithAnEllipsisCharacter(): void
+    {
+        file_put_contents($this->fixtureDir . '/getting-started/long.md', "# Long\n\n" . str_repeat('filler ', 80));
+
+        $entry = $this->entryTitled('Long');
+
+        $this->assertStringEndsWith('…', $entry['excerpt']);
+        $this->assertStringEndsNotWith('...', $entry['excerpt']);
     }
 
     #[Test]

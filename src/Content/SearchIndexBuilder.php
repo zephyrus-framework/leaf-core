@@ -62,7 +62,7 @@ final class SearchIndexBuilder
                 $plaintext = preg_replace('/\s+/', ' ', trim($plaintext)) ?? '';
 
                 $excerpt = mb_strlen($plaintext) > 300
-                    ? mb_substr($plaintext, 0, 300) . '...'
+                    ? mb_substr($plaintext, 0, 300) . '…'
                     : $plaintext;
 
                 $headings = array_map(fn (array $h) => $h['text'], $parsed->toc);
