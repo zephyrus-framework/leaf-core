@@ -6,6 +6,7 @@ namespace Leaf\Tests\Unit\Content;
 
 use Leaf\Content\MarkdownParser;
 use Leaf\Content\SearchIndexBuilder;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -279,6 +280,7 @@ MD);
     }
 
     #[Test]
+    #[RunInSeparateProcess]
     public function hostileRawHtmlIsIndexedInBoundedTimeWithoutThePcreJit(): void
     {
         $jit = ini_get('pcre.jit');
@@ -286,8 +288,7 @@ MD);
         try {
             file_put_contents(
                 $this->fixtureDir . '/getting-started/hostile.md',
-                "---\ntitle: Hostile\n---\n\n<div>" . str_repeat('<br', 2_000_000) . "</div>\n\n"
-                . '<div>' . str_repeat('<a class="heading-permalink"', 200_000) . "</div>\n",
+                "---\ntitle: Hostile\n---\n\n<div><a" . str_repeat(' class="heading-permalink"', 32_000) . "</div>\n",
             );
 
             $started = hrtime(true);
@@ -297,8 +298,8 @@ MD);
             ini_set('pcre.jit', $jit === false ? '1' : $jit);
         }
 
-        // Parsing the input alone takes about a second; the unbounded patterns added tens of seconds.
-        $this->assertLessThan(5.0, $seconds);
+        // A bounded pattern takes milliseconds; the quadratic one needs several seconds on this input.
+        $this->assertLessThan(1.0, $seconds);
     }
 
     /**

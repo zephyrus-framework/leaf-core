@@ -15,7 +15,7 @@ namespace Leaf\Content;
  */
 final class SearchIndexBuilder
 {
-    private const HEADING_PERMALINK = '#<a\b[^<>]*\bclass="heading-permalink"[^<>]*>[^<]*</a>#';
+    private const HEADING_PERMALINK = '#<a\b(?>[^<>]*?\bclass="heading-permalink")[^<>]*+>[^<]*</a>#';
 
     private const BLOCK_BOUNDARY = '#</(?:td|th|tr|p|li|dt|dd|h[1-6]|div|pre|blockquote|table|caption)>|<br\b[^<>]*>#i';
 
