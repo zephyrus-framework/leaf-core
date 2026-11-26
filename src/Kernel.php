@@ -157,6 +157,7 @@ abstract class Kernel
         }
         $this->translationExtension?->setCurrentLocale($locale);
         $this->contentLoader->setLocale($locale, $localization->locale, $supported);
+        $this->searchIndexBuilder->setLocale($locale, $localization->locale, $supported);
     }
 
     private function boot(): void

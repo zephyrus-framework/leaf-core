@@ -100,6 +100,24 @@ final class KernelLocaleTest extends TestCase
 
     #[Test]
     #[RunInSeparateProcess]
+    public function aDeclaredPrefixPrefixesTheSearchIndexUrls(): void
+    {
+        $this->writeConfig('[en, fr-ca]');
+        mkdir(ROOT_DIR . '/content/fr-ca/guide', 0755, true);
+        file_put_contents(ROOT_DIR . '/content/fr-ca/guide/only.md', "---\ntitle: Seulement\n---\nBonjour\n");
+        $_SERVER['LEAF_LOCALE'] = 'fr-ca';
+        $_SERVER['LEAF_ORIGINAL_URI'] = '/fr-ca/search.json';
+        $_SERVER['REQUEST_URI'] = '/search.json';
+        $kernel = $this->kernel();
+
+        $this->selectDevLocale($kernel);
+        $index = (fn () => $this->searchIndexBuilder->build())->call($kernel);
+
+        self::assertSame(['/fr-ca/guide/only'], array_column($index, 'url'));
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
     public function anUndeclaredPrefixIsPutBackInTheRequestPath(): void
     {
         $this->writeConfig('[en, fr-ca]');
