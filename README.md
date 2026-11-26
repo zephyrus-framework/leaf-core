@@ -177,6 +177,7 @@ When `locale_path` is not set, Leaf reads `locale/` at the project root if that 
 
 Leaf follows [semantic versioning](https://semver.org/) from 1.0.0: nothing public breaks before 2.0.
 Public means the `config.yml` keys, the content layout and front matter, the output in `dist/`, the template names and variables, the CLI, and the public API of the classes listed above except those marked `@internal`.
+A security fix can tighten a refusal or change the output in a minor or patch release.
 See [Versioning and stability](https://leaf.ophelios.com/getting-started/versioning/) for the full contract.
 Release notes are in [CHANGELOG.md](CHANGELOG.md); moving from 0.1.x is covered in [UPGRADE.md](UPGRADE.md).
 
