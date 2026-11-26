@@ -181,6 +181,51 @@ MD);
         $this->assertContains(['2024', '/2024/1'], array_map(fn (array $e) => [$e['section'], $e['url']], $index));
     }
 
+    #[Test]
+    public function aWordPastTheExcerptIsFoundInTheContentField(): void
+    {
+        file_put_contents($this->fixtureDir . '/getting-started/long.md', "# Long\n\n" . str_repeat('filler ', 80) . "\n\nneedleword here.\n");
+
+        $entry = $this->entryTitled('Long');
+
+        $this->assertStringNotContainsString('needleword', $entry['excerpt']);
+        $this->assertStringContainsString('needleword here.', $entry['content']);
+        $this->assertStringNotContainsString("\n", $entry['content']);
+    }
+
+    #[Test]
+    public function aTitleAndHeadingsWithAmpersandsAreNotEscapedTwice(): void
+    {
+        file_put_contents($this->fixtureDir . '/getting-started/robots.md', "---\ntitle: Tom & Jerry\n---\n\n## Sitemap & Robots\n\nBody.\n");
+
+        $entry = $this->entryTitled('Tom & Jerry');
+
+        $this->assertSame(['Sitemap & Robots'], $entry['headings']);
+    }
+
+    #[Test]
+    public function escapedMarkupInTheTextStaysTextInContentAndExcerpt(): void
+    {
+        file_put_contents($this->fixtureDir . '/getting-started/tags.md', "# Tags\n\nUse `<b>` for bold & more.\n");
+
+        $entry = $this->entryTitled('Tags');
+
+        $this->assertStringContainsString('Use <b> for bold & more.', $entry['content']);
+        $this->assertStringContainsString('Use <b> for bold & more.', $entry['excerpt']);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function entryTitled(string $title): array
+    {
+        $index = (new SearchIndexBuilder($this->fixtureDir, $this->parser))->build();
+        $found = array_values(array_filter($index, fn (array $e) => $e['title'] === $title));
+        $this->assertCount(1, $found);
+
+        return $found[0];
+    }
+
     private function removeDirectory(string $dir): void
     {
         if (!is_dir($dir)) {

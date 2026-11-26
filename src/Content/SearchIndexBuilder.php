@@ -38,7 +38,7 @@ final class SearchIndexBuilder
     }
 
     /**
-     * @return list<array{title: string, section: string, url: string, excerpt: string, headings: list<string>}>
+     * @return list<array{title: string, section: string, url: string, excerpt: string, headings: list<string>, content: string}>
      */
     public function build(): array
     {
@@ -58,8 +58,8 @@ final class SearchIndexBuilder
                 $parsed = $this->parser->parse($content);
                 $title = $parsed->meta('title', SlugTitle::fromSlug($slug));
 
-                $plaintext = strip_tags($parsed->html);
-                $plaintext = preg_replace('/\s+/', ' ', trim($plaintext));
+                $plaintext = html_entity_decode(strip_tags($parsed->html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $plaintext = preg_replace('/\s+/', ' ', trim($plaintext)) ?? '';
 
                 $excerpt = mb_strlen($plaintext) > 300
                     ? mb_substr($plaintext, 0, 300) . '...'
@@ -73,6 +73,7 @@ final class SearchIndexBuilder
                     'url' => $this->urlPrefix() . "/{$section}/{$slug}",
                     'excerpt' => $excerpt,
                     'headings' => $headings,
+                    'content' => $plaintext,
                 ];
             }
         }
