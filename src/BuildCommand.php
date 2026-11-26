@@ -135,12 +135,23 @@ class BuildCommand
             return 1;
         }
 
-        // Move /404/index.html to /404.html.
-        $notFoundSource = $outputDir . '/404/index.html';
-        if (is_file($notFoundSource)) {
-            rename($notFoundSource, $outputDir . '/404.html');
-            @rmdir($outputDir . '/404');
-            echo "  -> 404.html created" . PHP_EOL;
+        // Move each locale's 404/index.html to 404.html.
+        $notFoundDirs = ['' => ''];
+        if ($isMultiLocale) {
+            foreach ($supportedLocales as $locale) {
+                if ($locale !== $defaultLocale) {
+                    $notFoundDirs[$locale] = "[{$locale}] ";
+                }
+            }
+        }
+        foreach ($notFoundDirs as $locale => $label) {
+            $localeDir = $locale === '' ? $outputDir : $outputDir . '/' . $locale;
+            $notFoundSource = $localeDir . '/404/index.html';
+            if (is_file($notFoundSource)) {
+                rename($notFoundSource, $localeDir . '/404.html');
+                @rmdir($localeDir . '/404');
+                echo "  -> {$label}404.html created" . PHP_EOL;
+            }
         }
 
         // Generate search index. For multi-locale sites, produce a per-locale
