@@ -156,11 +156,11 @@ class BuildCommand
         if ($isMultiLocale) {
             foreach ($supportedLocales as $locale) {
                 $searchIndexBuilder->setLocale($locale, $defaultLocale, $supportedLocales);
-                $index = $searchIndexBuilder->build();
                 $localeOutputDir = ($locale === $defaultLocale) ? $outputDir : $outputDir . '/' . $locale;
                 if (!is_dir($localeOutputDir)) {
                     mkdir($localeOutputDir, 0o755, true);
                 }
+                $index = $this->keepBuiltPages($searchIndexBuilder->build(), $localeOutputDir);
                 file_put_contents(
                     $localeOutputDir . '/search.json',
                     json_encode($index, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE),
@@ -168,7 +168,7 @@ class BuildCommand
                 echo "  -> [{$locale}] " . count($index) . " pages indexed" . PHP_EOL;
             }
         } else {
-            $index = $searchIndexBuilder->build();
+            $index = $this->keepBuiltPages($searchIndexBuilder->build(), $outputDir);
             file_put_contents($outputDir . '/search.json', json_encode($index, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE));
             echo "  -> " . count($index) . " pages indexed" . PHP_EOL;
         }
@@ -229,6 +229,22 @@ class BuildCommand
 
         echo PHP_EOL . "Build complete!" . PHP_EOL;
         return 0;
+    }
+
+    /**
+     * Keeps an entry only when its page exists in the locale output directory.
+     *
+     * @param list<array{title: string, section: string, url: string, excerpt: string, headings: list<string>, content: string}> $index
+     * @return list<array{title: string, section: string, url: string, excerpt: string, headings: list<string>, content: string}>
+     */
+    private function keepBuiltPages(array $index, string $localeOutputDir): array
+    {
+        return array_values(array_filter(
+            $index,
+            static fn (array $entry): bool => is_file(
+                $localeOutputDir . '/' . $entry['section'] . '/' . basename($entry['url']) . '/index.html',
+            ),
+        ));
     }
 
     private function moveNotFound(string $dir, string $label): void

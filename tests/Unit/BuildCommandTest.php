@@ -35,17 +35,23 @@ final class BuildCommandTest extends TestCase
         rmdir($this->root);
     }
 
-    private function build(string $localization): string
+    /**
+     * @param list<string> $excludes
+     */
+    private function build(string $localization, array $excludes = []): string
     {
         file_put_contents($this->root . '/config.yml', $localization);
         $kernel = new class () extends Kernel {
             protected function registerControllers(Router $router): Router
             {
-                return $router->get('/{page}', PageController::class . '@page');
+                return $router
+                    ->get('/guides/{page}', PageController::class . '@page')
+                    ->get('/{page}', PageController::class . '@page');
             }
         };
         $command = new BuildCommand($kernel);
         $command->addPaths(['/404']);
+        $command->excludePatterns($excludes);
 
         ob_start();
         try {
@@ -79,5 +85,48 @@ final class BuildCommandTest extends TestCase
 
         self::assertFileExists($this->root . '/dist/404.html');
         self::assertDirectoryDoesNotExist($this->root . '/dist/404');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function indexedUrls(string $searchFile): array
+    {
+        $index = json_decode((string) file_get_contents($searchFile), true, 512, \JSON_THROW_ON_ERROR);
+
+        return array_column($index, 'url');
+    }
+
+    private function writeGuides(string $contentRoot): void
+    {
+        mkdir($contentRoot . '/guides', 0755, true);
+        file_put_contents($contentRoot . '/guides/kept.md', "# Kept\n\nPublic text.\n");
+        file_put_contents($contentRoot . '/guides/evil.md', "# Evil\n\nDraft text.\n");
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function anExcludedPageIsAbsentFromTheSearchIndexAndItsNeighbourStays(): void
+    {
+        $this->writeGuides($this->root . '/content');
+
+        $this->build("localization:\n  locale: en\n  supported_locales: [en]\n", ['#^/guides/evil#']);
+
+        self::assertDirectoryDoesNotExist($this->root . '/dist/guides/evil');
+        self::assertSame(['/guides/kept'], $this->indexedUrls($this->root . '/dist/search.json'));
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function anExcludedPageIsAbsentFromEveryLocalesSearchIndexOfAMultilingualSite(): void
+    {
+        $this->writeGuides($this->root . '/content');
+        $this->writeGuides($this->root . '/content/fr');
+
+        $this->build("localization:\n  locale: en\n  supported_locales: [en, fr]\n", ['#^/guides/evil#']);
+
+        self::assertDirectoryDoesNotExist($this->root . '/dist/fr/guides/evil');
+        self::assertSame(['/fr/guides/kept'], $this->indexedUrls($this->root . '/dist/fr/search.json'));
+        self::assertSame(['/guides/kept'], $this->indexedUrls($this->root . '/dist/search.json'));
     }
 }
