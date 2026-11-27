@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file. The format foll
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project follows
 [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2026-11-26
 
 First stable version. From here on, what is public does not break before 2.0: see
 [Versioning and stability](https://leaf.ophelios.com/getting-started/versioning/).
@@ -20,9 +20,12 @@ Moving from 0.1.x: see [UPGRADE.md](UPGRADE.md).
 
 ### Fixed
 
-- A numeric front matter `title` (`title: 2024`) is now indexed as a string, and a non-scalar one falls back to the title taken from the slug, so the page no longer vanishes from search.
+- A numeric front matter `title` (`title: 2024`) is now indexed as a string, and a non-scalar one, or text that is not valid UTF-8, falls back to the title taken from the slug, so the page no longer vanishes from search.
+- A build whose search index cannot be encoded as JSON now fails with a message naming `search.json` instead of writing an empty file and reporting success.
 - The search index text extraction is now bounded, so unusual markup cannot stall or fail a build on a PHP without the PCRE JIT.
 
 ## 0.1.x
 
 See the [GitHub Releases](https://github.com/zephyrus-framework/leaf-core/releases).
+
+[1.0.0]: https://github.com/zephyrus-framework/leaf-core/compare/v0.1.12...v1.0.0
