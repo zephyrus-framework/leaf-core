@@ -6,6 +6,7 @@ namespace Leaf\Tests\Unit\Content;
 
 use Leaf\Content\MarkdownParser;
 use Leaf\Content\SearchIndexBuilder;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -74,11 +75,12 @@ MD);
             'a boolean falls back to the slug' => ['true', 'Odd Title'],
             'a list falls back to the slug' => ['[a, b]', 'Odd Title'],
             'null falls back to the slug' => ['~', 'Odd Title'],
+            'bytes that are not UTF-8 fall back to the slug' => ['!!binary /w==', 'Odd Title'],
         ];
     }
 
     #[Test]
-    #[\PHPUnit\Framework\Attributes\DataProvider('frontMatterTitles')]
+    #[DataProvider('frontMatterTitles')]
     public function aNonStringTitleIsAlwaysAStringInTheIndex(string $yaml, string $expected): void
     {
         file_put_contents(

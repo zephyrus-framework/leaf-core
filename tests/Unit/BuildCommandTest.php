@@ -129,4 +129,33 @@ final class BuildCommandTest extends TestCase
         self::assertSame(['/fr/guides/kept'], $this->indexedUrls($this->root . '/dist/fr/search.json'));
         self::assertSame(['/guides/kept'], $this->indexedUrls($this->root . '/dist/search.json'));
     }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    public function aSearchIndexThatCannotBeEncodedIsReportedAndWritesNoFile(): void
+    {
+        file_put_contents($this->root . '/config.yml', "localization:\n  locale: en\n  supported_locales: [en]\n");
+        $command = new BuildCommand(new class () extends Kernel {
+            protected function registerControllers(Router $router): Router
+            {
+                return $router;
+            }
+        });
+        $file = $this->root . '/search.json';
+        $index = [['title' => "bad\xff", 'section' => 'guides', 'url' => '/guides/bad', 'excerpt' => '', 'headings' => [], 'content' => '']];
+
+        ob_start();
+        try {
+            $written = (new \ReflectionMethod($command, 'writeSearchIndex'))->invoke($command, $file, $index);
+        } finally {
+            $output = (string) ob_get_clean();
+        }
+
+        self::assertFalse($written);
+        self::assertSame(
+            "\nErrors:\n  - search.json could not be written: Malformed UTF-8 characters, possibly incorrectly encoded\n",
+            $output,
+        );
+        self::assertFileDoesNotExist($file);
+    }
 }

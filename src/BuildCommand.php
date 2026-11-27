@@ -161,15 +161,16 @@ class BuildCommand
                     mkdir($localeOutputDir, 0o755, true);
                 }
                 $index = $this->keepBuiltPages($searchIndexBuilder->build(), $localeOutputDir);
-                file_put_contents(
-                    $localeOutputDir . '/search.json',
-                    json_encode($index, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE),
-                );
+                if (!$this->writeSearchIndex($localeOutputDir . '/search.json', $index)) {
+                    return 1;
+                }
                 echo "  -> [{$locale}] " . count($index) . " pages indexed" . PHP_EOL;
             }
         } else {
             $index = $this->keepBuiltPages($searchIndexBuilder->build(), $outputDir);
-            file_put_contents($outputDir . '/search.json', json_encode($index, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE));
+            if (!$this->writeSearchIndex($outputDir . '/search.json', $index)) {
+                return 1;
+            }
             echo "  -> " . count($index) . " pages indexed" . PHP_EOL;
         }
 
@@ -316,6 +317,25 @@ class BuildCommand
             $byLocale[$locale] = array_keys($set);
         }
         return $byLocale;
+    }
+
+    /**
+     * Write the search index, or report why it cannot be encoded and write nothing.
+     *
+     * @param list<array<string, mixed>> $index
+     */
+    private function writeSearchIndex(string $file, array $index): bool
+    {
+        try {
+            $json = json_encode($index, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            echo PHP_EOL . "Errors:" . PHP_EOL;
+            echo "  - search.json could not be written: " . $e->getMessage() . PHP_EOL;
+            return false;
+        }
+        file_put_contents($file, $json);
+
+        return true;
     }
 
     /**

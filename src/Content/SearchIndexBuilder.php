@@ -64,7 +64,7 @@ final class SearchIndexBuilder
                 $parsed = $this->parser->parse($content);
                 $title = $parsed->meta('title');
                 $title = match (true) {
-                    is_string($title) => $title,
+                    is_string($title) && mb_check_encoding($title, 'UTF-8') => $title,
                     is_int($title), is_float($title) => (string) $title,
                     default => SlugTitle::fromSlug($slug),
                 };
