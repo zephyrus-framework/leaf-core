@@ -17,6 +17,7 @@ Moving from 0.1.x: see [UPGRADE.md](UPGRADE.md).
   `Configuration section 'localization' field 'supported_locales' has invalid value "en": listed once; locale codes are compared in lower case, so "EN" and "en" are the same locale.`
   (with the offending code in place of `en`).
 - The helper classes `Leaf\Content\SlugTitle`, `Leaf\Localization\LocaleCode`, `Leaf\LeafLatteExtension` and `Leaf\FileWatcher` are now `@internal` and are no longer part of the public API.
+- Front matter is always read by symfony/yaml (YAML 1.2), whether or not the PHP `yaml` extension is installed: on a host that had it, `yes`, `no`, `on` and `off` were booleans and `!!binary` stayed encoded.
 
 ### Fixed
 

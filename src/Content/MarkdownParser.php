@@ -7,6 +7,7 @@ namespace Leaf\Content;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\CommonMark\Node\Block\Heading;
+use League\CommonMark\Extension\FrontMatter\Data\SymfonyYamlFrontMatterParser;
 use League\CommonMark\Extension\FrontMatter\FrontMatterExtension;
 use League\CommonMark\Extension\FrontMatter\Output\RenderedContentWithFrontMatter;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
@@ -42,7 +43,7 @@ final class MarkdownParser
 
         $environment->addExtension(new CommonMarkCoreExtension());
         $environment->addExtension(new GithubFlavoredMarkdownExtension());
-        $environment->addExtension(new FrontMatterExtension());
+        $environment->addExtension(new FrontMatterExtension(new SymfonyYamlFrontMatterParser()));
         $environment->addExtension(new HeadingPermalinkExtension());
 
         $this->converter = new MarkdownConverter($environment);
@@ -77,7 +78,7 @@ final class MarkdownParser
      */
     public function extractFrontMatter(string $markdown): array
     {
-        $extension = new FrontMatterExtension();
+        $extension = new FrontMatterExtension(new SymfonyYamlFrontMatterParser());
         $parsed = $extension->getFrontMatterParser()->parse($markdown);
         $frontMatter = $parsed->getFrontMatter();
         return is_array($frontMatter) ? $frontMatter : [];

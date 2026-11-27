@@ -179,4 +179,14 @@ MD;
         $this->assertStringContainsString('<code', $result->html);
         $this->assertStringContainsString('echo', $result->html);
     }
+
+    #[Test]
+    public function frontMatterIsReadAsYaml12WhateverThePhpExtensions(): void
+    {
+        $result = $this->parser->parse("---\ntitle: yes\nflag: on\nraw: !!binary /w==\n---\n\nBody");
+
+        $this->assertSame('yes', $result->frontMatter['title']);
+        $this->assertSame('on', $result->frontMatter['flag']);
+        $this->assertSame("\xff", $result->frontMatter['raw']);
+    }
 }

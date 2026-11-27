@@ -32,6 +32,10 @@ Pin the new version, and replace the checksum together with it:
 - A locale listed twice in `localization.supported_locales` is refused at startup, once the codes are
   lowercased (`en` and `EN` count as one). Remove the duplicate. The message is quoted in the
   [changelog](CHANGELOG.md).
+- Front matter is now always read by symfony/yaml (YAML 1.2). On a host with the PHP `yaml` extension
+  (GitHub Actions with setup-php included), a `yes`, `no`, `on` or `off` value used to be a boolean and is
+  now a string: write `true` or `false`. Leaf itself reads only `title` and `order`; your templates read
+  the other keys.
 
 ## Tailwind CSS
 
